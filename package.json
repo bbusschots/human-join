@@ -1,0 +1,33 @@
+{
+  "name": "@bartificer/human-join",
+  "version": "1.0.0",
+  "description": "A JavaScript utility for joining lists in a human-friendly way.",
+  "main": "src/humanJoin.js",
+  "scripts": {
+    "build": "./node_modules/.bin/urequire config ./urequire.json",
+    "test": "./node_modules/.bin/qunit -c humanJoin:./src/humanJoin.js -d is:./node_modules/is_js -t ./test/tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bbusschots/human-join.git"
+  },
+  "keywords": [
+    "JavaScript",
+    "list",
+    "join"
+  ],
+  "author": "Bart Busschots",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bbusschots/human-join/issues"
+  },
+  "homepage": "https://github.com/bbusschots/human-join#readme",
+  "dependencies": {
+    "is_js": "^0.9.0",
+    "urequire": "^0.7.0-beta.33"
+  },
+  "devDependencies": {
+    "node-qunit": "^1.0.0",
+    "urequire-cli": "^0.7.5"
+  }
+}

@@ -1,0 +1,24 @@
+{
+    "bundle": {
+        "name": "humanJoin",
+        "path": "./src",
+        "filesz": "humanJoin.js",
+        "dependencies": {
+            "rootExports": {
+                "humanJoin": ["humanJoin"]
+            }
+        }
+    },
+    "build": {
+        "template": {
+            "name": "combined",
+            "combinedFile": "build/humanJoin.js",
+            "useStrict": true,
+            "verbose": true
+        },
+        "rootExports": {
+            "noConflict": true,
+            "runtimes": ["script"]
+        }
+    }
+}
