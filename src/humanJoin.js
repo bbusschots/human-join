@@ -4,15 +4,19 @@ const humanJoin = {
     /**
      * Join the elements of a list on a single line.
      *
+     * The function is designed to render an array of primitive values. If
+     * anything else is passed the returned value will be the result of
+     * calling JavaScript's `String()` function on the value. The same
+     * goes for non-primitive values within arrays.
+     *
      * @param {Array|object} data - the data to join.
      * @param {object} [opts={}] - options.
      * @param {string} [opts.separator=', '] - the separator to use between list elemnts.
      * @param {string} [opts.conjunction=' & '] - the conjunction to use before the last item in the list.
      * @return {string}
-     * @throws {TypeError}
      */
     inline: function(data, opts){
-        if(is.not.object(data)) throw new TypeError('data must be an array or object');
+        if(is.not.array(data)) return String(data);
         if(is.not.object(opts)) opts = {};
         
         // get a list of list parts
@@ -36,7 +40,7 @@ const humanJoin = {
         if(is.not.string(opts.conjunction)) opts.conjunction = ' & ';
         let ans = String(parts[0]);
         for(let i = 1; i < parts.length; i++){
-            ans += i + 1 === `${parts.length ? opts.conjunction : opts.separator}${parts[i]}`;
+            ans += `${i + 1 === parts.length ? opts.conjunction : opts.separator}${parts[i]}`;
         }
         return ans;
     }
