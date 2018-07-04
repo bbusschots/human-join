@@ -64,7 +64,13 @@ class Joiner{
         if(is.not.string(name) || is.empty(name)) throw new TypeError('name must be a single-line string of one or more letters, digits, or underscores');
         if(is.not.function(fn)) throw new TypeError('renderer must be a callback');
         if(is.not.undefined(RENDERERS[name])) throw new RangeError(`duplicate renderer '${name}'`);
+        if(is.not.undefined(this.prototype[name])) throw new RangeError(`name '${name}' is not available`);
         RENDERERS[name] = fn;
+        this.prototype[name] = function(d, o = {}){
+            if(is.not.object(o)) o = {};
+            let uo = _.defaultsDeep({ renderer: { name }}, o);
+            return this.join(d, uo);
+        };
     }
     
     /**
