@@ -26,6 +26,26 @@ const RENDERERS = {};
 const POST_PROCS = {};
 
 /**
+ * Cast plugin options value to an object.
+ *
+ * @param {*} val
+ * @return {Object} The structure of the returned object depends on `val`'s
+ * type as follows:
+ * * `undefined` or `null`: `{ enabled: false }`
+ * * `boolean`: returned as `{ enabled: val }`
+ * * `string`, `number` or `Array`: returned as `{ arg: val }`
+ * * `object` (except for arrays): returned un-changed
+ * * all other values: { enabled: true }
+ */
+function pluginOptsToObject(val){
+    if(is.undefined(val) || is.null(val)) return { enabled: false };
+    if(is.boolean(val)) return { enabled: val };
+    if(is.number(val) || is.string(val) || is.array(val)) return { arg: val };
+    if(is.object(val)) return val;
+    return { enabled: true };
+}
+
+/**
  * The joiner class.
  */
 class Joiner{
@@ -113,8 +133,9 @@ class Joiner{
         this.assertAvailableName(name);
         if(is.not.function(fn)) throw new TypeError('preprocessor must be a callback');
         PRE_PROCS[name] = fn;
-        this.prototype[name] = function(ppc = {}){
-            this._config[name] = ppc;
+        this.prototype[name] = function(o){
+            if(is.not.object(this._conf[name])) this._conf[name] = { enabled: false };
+            _.assign(this._conf[name], pluginOptsToObject(o));
             return this;
         };
     }
@@ -131,15 +152,16 @@ class Joiner{
         this.assertAvailableName(name);
         if(is.not.function(fn)) throw new TypeError('renderer must be a callback');
         RENDERERS[name] = fn;
-        this.prototype[name] = function(d, o = {}){
-            let ro = {};
-            ro[name] = o;
-            console.log('inside renderer caller', name, this);
-            return this.join(d, ro);
+        this.prototype[name] = function(d, o){
+            this._conf.renderer = name;
+            if(is.not.object(this._conf[name])) this._conf[name] = {};
+            return this.join(d, pluginOptsToObject(o));
         };
     }
     
     /**
+     * Register a post-processor.
+     * 
      * @param {string} name
      * @param {function} fn
      * @throws TypeRrror
@@ -148,16 +170,25 @@ class Joiner{
     static registerPostProcessor(name, fn){
         this.assertAvailableName(name);
         POST_PROCS[name] = fn;
-        this.prototype[name] = function(ppc = {}){
-            this._config[name] = ppc;
+        this.prototype[name] = function(o){
+            if(is.not.object(this._conf[name])) this._conf[name] = { enabled: false };
+            _.assign(this._conf[name], pluginOptsToObject(o));
             return this;
         };
+    }
+    
+    /**
+     * The name of the active renderer.
+     */
+    get renderer(){
+        return this._conf.renderer;
     }
     
     /**
      * @param {Array} data
      * @param {Object} [opts={}]
      * @returns {string}
+     * @throws {Error}
      */
     join(data, opts){
         if(is.not.object(opts)) opts = {};
@@ -165,14 +196,22 @@ class Joiner{
         
         // apply all active pre-processors to the data
         for(const ppn of Object.keys(PRE_PROCS)){
-            // TO DO - add more tests and try/catch
-            if(conf[ppn]){
-                PRE_PROCS[ppn](data, conf[ppn]);
+            try{
+                if(conf[ppn] && conf[ppn].enabled){
+                    PRE_PROCS[ppn](data, conf[ppn]);
+                }
+            }catch(err){
+                throw new Error(`failed to execute pre-processor '${ppn}' with error: ${err.message}`);
             }
         }
         
         // render the data
-        let ans = RENDERERS[conf.renderer](data, conf[conf.renderer]);
+        let ans = '';
+        try{
+            ans = RENDERERS[conf.renderer](data, conf[conf.renderer]);
+        }catch(err){
+            throw new Error(`failed to execute renderer '${conf.renderer}' with error: ${err.message}`);
+        }
         
         // apply post-processors
         // TO DO
