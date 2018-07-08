@@ -42,34 +42,100 @@ class Joiner{
     }
     
     /**
-     * @param {string} name
-     * @param {function} fn
-     * @throws TypeRrror
-     * @throws {RangeError}
+     * Test if a given value is a valid plugin name. I.e., can it be used as a
+     * name for a renderer, pre-processor, or post-processor?
+     *
+     * To be valid a value must be a string at least one character long
+     * consisting of only letters, digits, and underscores and not starting
+     * with a digit.
+     *
+     * @param {*} val
+     * @return {boolean}
      */
-    static registerPreProcessor(name, fn){
-        if(is.not.string(name) || is.empty(name)) throw new TypeError('name must be a single-line string of one or more letters, digits, or underscores');
-        if(is.not.function(fn)) throw new TypeError('preprocessor must be a callback');
-        if(is.not.undefined(PRE_PROCS[name])) throw new RangeError(`duplicate pre-processor '${name}'`);
-        PRE_PROCS[name] = fn;
+    static isPluginName(val){
+        if(is.not.string(val) || is.empty(val)) return false;
+        return val.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/) ? true : false;
     }
     
     /**
+     * Test if a given value is a valid plugin name, and if not, throw a Type
+     * Error.
+     *
+     * @param {val}
+     * @return {boolean} always returns `true`.
+     * @throws {TypeError}
+     * @see {@link Joiner.isPluginName}
+     */
+    static assertPluginName(val){
+        if(!this.isPluginName(val)) throw new TypeError('plugin name must be a string at least one character long consisting of only letters, digits, and underscores, and not starting with a digit.');
+        return true;
+    }
+    
+    /**
+     * Test if a given name is available to register a plugin with. Invalid
+     * names will always return false.
+     *
+     * @param {string} name
+     *@return {boolean}
+     * @see {@link Joiner.isPluginName}
+     */
+    static isAvailableName(name){
+        if(!this.isPluginName(name)) return false;
+        return is.undefined(this[name]) ? true : false;
+    }
+    
+    /**
+     * Test if a given name is available to register a plugin with, and thorw
+     * a Range Error if it's not. Invalid names will result in Type Errors.
+     *
+     * @param {string} name
+     * @return {boolean} Always returns `true`.
+     * @throws {TypeError}
+     * @throws {RangeError}
+     * @see {@link Joiner.assertPluginName}
+     * @see {@link Joiner.isAvailableName}
+     */
+    static assertAvailableName(name){
+        this.assertPluginName(name);
+        if(!this.isAvailableName(name)) throw new RangeError(`the name '${name}' is not available, another plugin or core function/ property is already using it.`);
+        return true;
+    }
+    
+    /**
+     * Register a pre-processor plugin.
+     *
+     * @param {string} name
+     * @param {function} fn
+     * @throws {TypeError}
+     * @throws {RangeError}
+     */
+    static registerPreProcessor(name, fn){
+        this.assertAvailableName(name);
+        if(is.not.function(fn)) throw new TypeError('preprocessor must be a callback');
+        PRE_PROCS[name] = fn;
+        this.prototype[name] = function(ppc = {}){
+            this._config[name] = ppc;
+            return this;
+        };
+    }
+    
+    /**
+     * Register a renderer.
+     *
      * @param {string} name
      * @param {function} fn
      * @throws TypeRrror
      * @throws {RangeError}
      */
     static registerRenderer(name, fn){
-        if(is.not.string(name) || is.empty(name)) throw new TypeError('name must be a single-line string of one or more letters, digits, or underscores');
+        this.assertAvailableName(name);
         if(is.not.function(fn)) throw new TypeError('renderer must be a callback');
-        if(is.not.undefined(RENDERERS[name])) throw new RangeError(`duplicate renderer '${name}'`);
-        if(is.not.undefined(this.prototype[name])) throw new RangeError(`name '${name}' is not available`);
         RENDERERS[name] = fn;
         this.prototype[name] = function(d, o = {}){
-            if(is.not.object(o)) o = {};
-            let uo = _.defaultsDeep({ renderer: { name }}, o);
-            return this.join(d, uo);
+            let ro = {};
+            ro[name] = o;
+            console.log('inside renderer caller', name, this);
+            return this.join(d, ro);
         };
     }
     
@@ -80,10 +146,12 @@ class Joiner{
      * @throws {RangeError}
      */
     static registerPostProcessor(name, fn){
-        if(is.not.string(name) || is.empty(name)) throw new TypeError('name must be a single-line string of one or more letters, digits, or underscores');
-        if(is.not.function(fn)) throw new TypeError('preprocessor must be a callback');
-        if(is.not.undefined(POST_PROCS[name])) throw new RangeError(`duplicate post-processor '${name}'`);
+        this.assertAvailableName(name);
         POST_PROCS[name] = fn;
+        this.prototype[name] = function(ppc = {}){
+            this._config[name] = ppc;
+            return this;
+        };
     }
     
     /**
@@ -95,14 +163,16 @@ class Joiner{
         if(is.not.object(opts)) opts = {};
         const conf = _.defaultsDeep({}, opts, this._conf);
         
-        // apply pre-processors to the data
-        for(const pp of opts.preProcessors){
+        // apply all active pre-processors to the data
+        for(const ppn of Object.keys(PRE_PROCS)){
             // TO DO - add more tests and try/catch
-            PRE_PROCS[pp.name](data, pp.opts);
+            if(conf[ppn]){
+                PRE_PROCS[ppn](data, conf[ppn]);
+            }
         }
         
         // render the data
-        let ans = RENDERERS[conf.renderer.name](data, conf.renderer.opts);
+        let ans = RENDERERS[conf.renderer](data, conf[conf.renderer]);
         
         // apply post-processors
         // TO DO
@@ -180,8 +250,4 @@ Joiner.registerPreProcessor('quote', function(data, opts){
     }
 });
 
-module.exports = new Joiner({
-    renderer: { name: 'inline', opts: {} },
-    preProcessors: {},
-    postProcessors: {}
-});
+module.exports = new Joiner({ renderer: 'inline' });
