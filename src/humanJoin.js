@@ -134,9 +134,10 @@ class Joiner{
         if(is.not.function(fn)) throw new TypeError('preprocessor must be a callback');
         PRE_PROCS[name] = fn;
         this.prototype[name] = function(o){
-            if(is.not.object(this._conf[name])) this._conf[name] = { enabled: false };
-            _.assign(this._conf[name], pluginOptsToObject(o));
-            return this;
+            const newConf = _.cloneDeep(this._conf);
+            if(is.not.object(newConf[name])) newConf[name] = { enabled: false };
+            _.merge(newConf[name], pluginOptsToObject(o));
+            return new Joiner(newConf);
         };
     }
     
@@ -171,10 +172,26 @@ class Joiner{
         this.assertAvailableName(name);
         POST_PROCS[name] = fn;
         this.prototype[name] = function(o){
-            if(is.not.object(this._conf[name])) this._conf[name] = { enabled: false };
-            _.assign(this._conf[name], pluginOptsToObject(o));
-            return this;
+            const newConf = _.cloneDeep(this._conf);
+            if(is.not.object(newConf[name])) newConf[name] = { enabled: false };
+            _.merge(newConf[name], pluginOptsToObject(o));
+            return new Joiner(newConf);
         };
+    }
+    
+    /**
+     * Register a config shortcut.
+     *
+     * @param {string} name
+     * @param {Object} config
+     * @throws {TypeError}
+     * @throws {RangeError}
+     */
+    static registerConfigShortcut(name, config){
+        this.assertAvailableName(name);
+        Object.defineProperty(this.prototype, name, {get: function(){
+            return new Joiner(_.merge({}, this._conf, config));
+        }});
     }
     
     /**
@@ -193,6 +210,7 @@ class Joiner{
     join(data, opts){
         if(is.not.object(opts)) opts = {};
         const conf = _.defaultsDeep({}, opts, this._conf);
+        data = _.cloneDeep(data);
         
         // apply all active pre-processors to the data
         for(const ppn of Object.keys(PRE_PROCS)){
@@ -250,6 +268,11 @@ Joiner.registerRenderer('inline', function(data, opts){
     }
     return ans;
 });
+Joiner.registerConfigShortcut('or', { renderer: 'inline', inline: { conjunction: ' or ' } });
+Joiner.registerConfigShortcut('oxOr', { renderer: 'inline', inline: { conjunction: ', or ' } });
+Joiner.registerConfigShortcut('and', { renderer: 'inline', inline: { conjunction: ' and ' } });
+Joiner.registerConfigShortcut('oxAnd', { renderer: 'inline', inline: { conjunction: ', and ' } });
+
 
 const CHAR_MIRROR_MAP = {
     '!' : '¡',
@@ -288,5 +311,7 @@ Joiner.registerPreProcessor('quote', function(data, opts){
         data[i] = `${opts.quoteWith}${data[i]}${opts.mirror ? mirrorString(opts.quoteWith) : opts.quoteWith}`;
     }
 });
+Joiner.registerConfigShortcut('q', {quote: {enabled: true, quoteWith: "'", mirror: false}});
+Joiner.registerConfigShortcut('qq', {quote: {enabled: true, quoteWith: '"', mirror: false}});
 
 module.exports = new Joiner({ renderer: 'inline' });

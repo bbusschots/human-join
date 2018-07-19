@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "A JavaScript utility for joining lists in a human-friendly way.",
   "main": "src/humanJoin.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "./node_modules/.bin/urequire config ./urequire.json",
     "test": "./node_modules/.bin/qunit -c humanJoin:./src/humanJoin.js -d is:./node_modules/is_js _:./node_modules/lodash -t ./test/tests.js"

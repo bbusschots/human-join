@@ -13,7 +13,7 @@ QUnit.module('inline renderer', function(){
         a.strictEqual(humanJoin.inline('boogers'), 'boogers', 'string as data handled correctly');
         a.strictEqual(humanJoin.inline(42), '42', 'number as data handled correctly');
         let fn = function(){};
-        a.strictEqual(humanJoin.inline(fn), String(fn), 'function reference as data handled correctly');
+        a.strictEqual(humanJoin.inline(fn), String(_.cloneDeep(fn)), 'function reference as data handled correctly');
         a.strictEqual(humanJoin.inline([]), '', 'empty array handled correctly');
         a.strictEqual(humanJoin.inline(['boogers']), 'boogers', 'single element array handled correctly');
         a.strictEqual(humanJoin.inline(['boogers', 'snot']), 'boogers & snot', 'two element array handled correctly');
