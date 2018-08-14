@@ -1,6 +1,6 @@
 {
   "name": "@bartificer/human-join",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A JavaScript utility for joining lists in a human-friendly way.",
   "main": "src/humanJoin.js",
   "publishConfig": {
