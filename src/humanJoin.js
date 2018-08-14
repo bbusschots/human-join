@@ -241,7 +241,15 @@ class Joiner{
         }
         
         // apply post-processors
-        // TO DO
+        for(const ppn of Object.keys(POST_PROCS)){
+            try{
+                if(conf[ppn] && conf[ppn].enabled){
+                    ans = POST_PROCS[ppn](ans, conf[ppn]);
+                }
+            }catch(err){
+                throw new Error(`failed to execute post-processor '${ppn}' with error: ${err.message}`);
+            }
+        }
         
         // return the final result
         return ans;
@@ -329,5 +337,27 @@ Joiner.registerPreProcessor('quote', function(data, opts){
 });
 Joiner.registerConfigShortcut('q', {quote: {enabled: true, quoteWith: "'", mirror: false}});
 Joiner.registerConfigShortcut('qq', {quote: {enabled: true, quoteWith: '"', mirror: false}});
+
+Joiner.registerPostProcessor('wrap', function(str, opts){
+    if(is.not.object(opts)) opts = {};
+    let ans = String(str);
+    if(is.not.string(opts.wrapWith) || is.empty(opts.wrapWith)) opts.wrapWith = "(";
+    if(is.undefined(opts.mirror)){
+        opts.mirror = true;
+    }else{
+        opts.mirror = opts.mirror ? true : false;
+    }
+    return `${opts.wrapWith}${ans}${opts.mirror ? mirrorString(opts.wrapWith) : opts.wrapWith}`;
+});
+Joiner.registerConfigShortcut('bracket', {wrap: {enabled: true, wrapWith: '(', mirror: true}});
+Joiner.registerConfigShortcut('b', {wrap: {enabled: true, wrapWith: '(', mirror: true}});
+Joiner.registerConfigShortcut('rb', {wrap: {enabled: true, wrapWith: '(', mirror: true}});
+Joiner.registerConfigShortcut('squareBracket', {wrap: {enabled: true, wrapWith: '[', mirror: true}});
+Joiner.registerConfigShortcut('sb', {wrap: {enabled: true, wrapWith: '[', mirror: true}});
+Joiner.registerConfigShortcut('angleBracket', {wrap: {enabled: true, wrapWith: '<', mirror: true}});
+Joiner.registerConfigShortcut('ab', {wrap: {enabled: true, wrapWith: '<', mirror: true}});
+Joiner.registerConfigShortcut('curlyBracket', {wrap: {enabled: true, wrapWith: '{', mirror: true}});
+Joiner.registerConfigShortcut('squirlyBracket', {wrap: {enabled: true, wrapWith: '{', mirror: true}});
+Joiner.registerConfigShortcut('cb', {wrap: {enabled: true, wrapWith: '{', mirror: true}});
 
 module.exports = new Joiner({ renderer: 'inline' });
