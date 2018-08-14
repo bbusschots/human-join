@@ -209,7 +209,16 @@ class Joiner{
      */
     join(data, opts){
         if(is.not.object(opts)) opts = {};
+        
+        // auto-enable any plugins mentioned in the passed options
+        for(const p of Object.keys(opts)){
+            if(is.object(opts[p])) opts[p].enabled = true;
+        }
+        
+        // combine the passed opts with the config
         const conf = _.defaultsDeep({}, opts, this._conf);
+        
+        // clone the data (so it can be safely transformed without spooky action at a distance)
         data = _.cloneDeep(data);
         
         // apply all active pre-processors to the data
@@ -237,6 +246,13 @@ class Joiner{
         // return the final result
         return ans;
     }
+    
+    /**
+     * An alias for the `.join()` function.
+     *
+     * @see {@link Joiner#join}
+     */
+    j(...args){ return this.join(...args); }
 }
 
 Joiner.registerRenderer('inline', function(data, opts){
