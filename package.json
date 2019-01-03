@@ -27,7 +27,7 @@
   "homepage": "https://github.com/bbusschots/human-join#readme",
   "dependencies": {
     "is_js": "^0.9.0",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.11",
     "urequire": "^0.7.0-beta.33"
   },
   "devDependencies": {
