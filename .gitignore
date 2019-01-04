@@ -62,6 +62,6 @@ typings/
 
 *.komodoproject
 
-build/
+dist/
 
 temp*\.js
