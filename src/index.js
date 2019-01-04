@@ -1,5 +1,5 @@
-const is = require('is_js');
-const _ = require('lodash');
+import is from 'is_js';
+import _ from 'lodash';
 
 /**
  * The defined pre-processors.
@@ -430,4 +430,5 @@ Joiner.registerConfigShortcut('curlyBracket', {wrap: {enabled: true, wrapWith: '
 Joiner.registerConfigShortcut('squirlyBracket', {wrap: {enabled: true, wrapWith: '{', mirror: true}});
 Joiner.registerConfigShortcut('cb', {wrap: {enabled: true, wrapWith: '{', mirror: true}});
 
-module.exports = new Joiner({ renderer: 'inline' });
+const defaultJoiner = new Joiner({ renderer: 'inline' });
+export default defaultJoiner;

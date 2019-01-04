@@ -1,6 +1,58 @@
 # humanJoin.js
 A JavaScript utility for joining lists in a human-friendly way.
 
+This module is packaged as both a universal module, i.e, a
+[UMD](https://github.com/umdjs/umd) (`dist/index.js`) and an ES6 module
+(`dist/index.es.js`), so it can be imported in multiple different ways.
+
+By default the module is published as `humanJoiner`, but you may find
+it more convenient to use the shorter name `hjn`. These instructions
+will show how to import to both names, but the examples will all use
+the shorter alternative name.
+
+## Install & Import
+
+### NodeJS
+
+Install:
+
+```
+npm install --save '@bartificer/human-join'
+```
+
+Import:
+
+```
+// import with long name
+const humanJoiner = require('@bartificer/human-join');
+
+// or, import with short name
+const hjn = require('@bartificer/human-join');
+```
+
+### ES6 Module
+
+```
+// import with long name
+import * as humanJoiner from './dist/index.es.js'
+
+// or, import with short name
+import * as hjn from './dist/index.es.js'
+```
+
+### Browser (from CDN)
+
+```
+<!-- Import module, always imported as humanJoiner -->
+<script type="text/javascript" src="">https://cdn.jsdelivr.net/gh/bbusschots/human-join/dist/index.js</script>
+<!-- optionally add shorter name -->
+<script type="text/javascript">
+var hjn = humanJoiner;
+</script>
+```
+
+## Usage
+
 ```
 const hjn = require('@bartificer/human-join');
 
