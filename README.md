@@ -44,7 +44,7 @@ import * as hjn from './dist/index.es.js'
 
 ```
 <!-- Import module, always imported as humanJoiner -->
-<script type="text/javascript" src="">https://cdn.jsdelivr.net/npm/@bartificer/human-join/dist/index.js</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@bartificer/human-join/dist/index.js"></script>
 <!-- optionally add shorter name -->
 <script type="text/javascript">
 var hjn = humanJoiner;
