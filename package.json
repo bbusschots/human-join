@@ -4,7 +4,9 @@
   "description": "A JavaScript utility for joining lists in a human-friendly way.",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   },
